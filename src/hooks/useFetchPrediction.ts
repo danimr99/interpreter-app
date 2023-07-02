@@ -16,18 +16,22 @@ export function useFetchPrediction (
     if (hands.length === 0) return
 
     async function fetchPrediction () {
-      const response = await fetch(`${url}${endpoint}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify(hands)
-        })
+      try {
+        const response = await fetch(`${url}${endpoint}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify(hands)
+          })
 
-      const results = await response.json() as HandSignPrediction[]
-      setData(results)
+        const results = await response.json() as HandSignPrediction[]
+        setData(results)
+      } catch (error) {
+        console.log('An error has occurred while trying to fetch predictions')
+      }
     }
 
     fetchPrediction()

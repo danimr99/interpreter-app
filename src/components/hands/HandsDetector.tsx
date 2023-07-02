@@ -6,8 +6,8 @@ import { runOnJS } from 'react-native-reanimated'
 import { PREDICTIONS } from '../../constants'
 import type { HandDetectionResult } from '../../models/hand'
 import type { HandSignPrediction } from '../../models/prediction'
-import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
 import { useFetchPrediction } from '../../hooks/useFetchPrediction'
+import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
 import { estimateDetectedSign } from '../../utils/predictions'
 import {
   IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon
