@@ -3,6 +3,7 @@ import Scaffold from './common/Scaffold'
 import Button from './common/Button'
 import LoadingSpinner from './common/LoadingSpinner'
 import IconButton from './common/IconButton'
+import Divider from './common/Divider'
 
 // Hands
 import HandsDetector from './hands/HandsDetector'
@@ -17,6 +18,8 @@ import ToggleCameraIcon from './icons/ToggleCameraIcon'
 import FlashOnIcon from './icons/FlashOnIcon'
 import FlashOffIcon from './icons/FlashOffIcon'
 import TranslateIcon from './icons/TranslateIcon'
+import VoiceOverIcon from './icons/VoiceOverIcon'
+import LanguagesIcon from './icons/LanguagesIcon'
 
 export {
   // Common
@@ -24,6 +27,7 @@ export {
   Button,
   LoadingSpinner,
   IconButton,
+  Divider,
 
   // Hands
   HandsDetector,
@@ -37,5 +41,7 @@ export {
   ToggleCameraIcon,
   FlashOnIcon,
   FlashOffIcon,
-  TranslateIcon
+  TranslateIcon,
+  VoiceOverIcon,
+  LanguagesIcon
 }

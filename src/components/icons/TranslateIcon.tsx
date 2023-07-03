@@ -4,14 +4,13 @@ const TranslateIcon = ({ iconColor = 'white' }: {
   iconColor?: string
 }): JSX.Element => (
   <Svg
-    width={24}
-    height={24}
+    width="24"
+    height="24"
     fill="none"
     stroke={iconColor}
     strokeLinecap="round"
     strokeLinejoin="round"
-    strokeWidth={1.5}
-    className="icon icon-tabler icon-tabler-language"
+    strokeWidth={2}
     viewBox="0 0 24 24"
   >
     <Path stroke="none" d="M0 0h24v24H0z" />

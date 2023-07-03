@@ -37,5 +37,5 @@ export function useFetchPrediction (
     fetchPrediction()
   }, [inputHands])
 
-  return [inputHands, setInputHands, data] as const
+  return [setInputHands, data] as const
 }

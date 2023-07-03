@@ -1,14 +1,15 @@
 import type { ReactNode } from 'react'
 import { TouchableOpacity } from 'react-native'
 
-const IconButton = ({ buttonColor = 'bg-theme/[0.5]', children, onClick }: {
+const IconButton = ({ buttonColor = 'bg-transparent', buttonShape = 'rounded-full', onClick, children }: {
   buttonColor?: string
-  children: ReactNode
+  buttonShape?: string
   onClick: () => any
+  children: ReactNode
 }): JSX.Element => {
   return (
     <TouchableOpacity
-      className={`w-10 h-10 justify-center items-center rounded-lg ${buttonColor}`}
+      className={`w-10 h-10 justify-center items-center ${buttonShape} ${buttonColor}`}
       onPress={onClick}
     >
       {children}

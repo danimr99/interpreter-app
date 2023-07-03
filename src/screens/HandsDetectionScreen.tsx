@@ -77,7 +77,11 @@ const HandsDetectionScreen = (): JSX.Element => {
   if (cameraPermissionStatus === Permissions.RESULTS.GRANTED || cameraPermissionStatus === Permissions.RESULTS.LIMITED) {
     return (
       <Scaffold>
-        <HandsDetector isCameraActive={isCameraActive} devices={devices} />
+        <HandsDetector
+          isCameraActive={isCameraActive}
+          devices={devices}
+          detectionLanguage='en'
+        />
       </Scaffold>
     )
   }
