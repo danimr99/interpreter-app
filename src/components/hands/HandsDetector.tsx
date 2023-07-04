@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Text, View } from 'react-native'
 import { Camera, CameraDevices, CameraPosition, useFrameProcessor } from 'react-native-vision-camera'
 import { runOnJS } from 'react-native-reanimated'
 
@@ -8,12 +8,13 @@ import type { HandDetectionResult } from '../../models/hand'
 import type { HandSignPrediction } from '../../models/prediction'
 import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
 import { estimateDetectedSign } from '../../utils/predictions'
+import { getLanguageFromCode } from '../../utils/languages'
+import { translateText } from '../../utils/translations'
 import { useFetchPrediction } from '../../hooks/useFetchPrediction'
 import {
   IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon, VoiceOverIcon, LanguagesIcon
 } from '..'
 import { ErrorMessageScreen, LoadingScreen } from '../../screens'
-import { getLanguageFromCode } from '../../utils/languages'
 
 
 const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
@@ -32,6 +33,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
   const [isVoiceOverEnabled, setIsVoiceOverEnabled] = useState<boolean>(false)
   const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(false)
   const [translationLanguage, setTranslationLanguage] = useState<string>('')
+  const [translationText, setTranslationText] = useState<string>('')
 
   // Camera availability
   useEffect(() => {
@@ -64,6 +66,11 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
     processPredictions(data)
   }, [data])
 
+  // Translations
+  useEffect(() => {
+    processTranslations()
+  }, [predictions])
+
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet'
     const results = estimateHandsPose(frame)
@@ -78,6 +85,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
       // Check if predictions is empty
       if (predictions.length === 0) {
         setPredictions([currentPrediction])
+        setTranslationText('')
       } else {
         // Get previous prediction
         const previousPrediction = predictions[predictions.length - 1]
@@ -90,6 +98,18 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
         }
       }
     }
+  }
+
+  async function processTranslations (): Promise<void> {
+    if (!isTranslationEnabled) return
+    if (translationLanguage === '') return
+    if (predictions.length < PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES ||
+      predictions.length > PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES) return
+
+    const currentPrediction = predictions[predictions.length - 1]
+    const translatedPrediction = await translateText(currentPrediction.label, detectionLanguage, translationLanguage)
+
+    setTranslationText(translatedPrediction)
   }
 
   function handleToggleCamera (): void {
@@ -181,7 +201,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
                   <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(detectionLanguage)}</Text>
                 </View>
                 {
-                  isTranslationEnabled && (
+                  (isTranslationEnabled && translationLanguage.length > 0) && (
                     <View className='flex-1 px-4 py-2 justify-center items-center'>
                       <Text className='text-gray-400 text-xs' numberOfLines={1}>To</Text>
                       <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(translationLanguage)}</Text>
@@ -197,7 +217,9 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
                   {
                     isTranslationEnabled && (
                       translationLanguage.length > 0 ? (
-                        <Text className='text-gray-400 text-lg font-semibold' numberOfLines={1}>Translation</Text>
+                        translateText.length > 0 && (
+                          <Text className='text-gray-400 text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
+                        )
                       ) : (
                         <Text className='text-gray-400 text-sm' numberOfLines={1}>Select a language to translate</Text>
                       )
@@ -225,7 +247,6 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
           </View>
         )
       }
-
     </View >
   )
 }

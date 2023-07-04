@@ -14,7 +14,6 @@
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
     "google-translate-api-x": "^10.6.7",
-    "https-proxy-agent": "^7.0.0",
     "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-native": "0.71.10",
