@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Alert, Text, View } from 'react-native'
-import { Camera, CameraDevices, CameraPosition, useFrameProcessor } from 'react-native-vision-camera'
+import { Text, View } from 'react-native'
+import { Camera, CameraDevices, useFrameProcessor } from 'react-native-vision-camera'
 import { runOnJS } from 'react-native-reanimated'
 
 import { COLORS, PREDICTIONS } from '../../constants'
@@ -10,45 +10,28 @@ import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
 import { estimateDetectedSign } from '../../utils/predictions'
 import { getLanguageFromCode } from '../../utils/languages'
 import { translateText } from '../../utils/translations'
-import { useFetchPrediction } from '../../hooks/useFetchPrediction'
+import { useCamera } from '../../hooks/useCamera'
+import { useFetchPredictions } from '../../hooks/useFetchPredictions'
+import { useVoiceOver } from '../../hooks/useVoiceOver'
+import { useTranslation } from '../../hooks/useTranslation'
 import {
-  IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon, VoiceOverIcon, LanguagesIcon
+  IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon, VoiceOverIcon, LanguagesIcon, LoadingSpinner
 } from '..'
 import { ErrorMessageScreen, LoadingScreen } from '../../screens'
 
 
-const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
+const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
   devices: CameraDevices
   isCameraActive: boolean
-  detectionLanguage: string
+  detectionLanguageCode: string
 }): JSX.Element => {
-  const [cameraPosition, setCameraPosition] = useState<CameraPosition>('front')
-  const device = cameraPosition === 'front' ? devices.front : devices.back
-  const [isLoadingCamera, setIsLoadingCamera] = useState(true)
-  const [isCameraFound, setIsCameraFound] = useState(device != null)
-  const [isFlashEnabled, setIsFlashEnabled] = useState<boolean>(false)
+  const [device, isLoadingCamera, isCameraFound, isFlashEnabled, toggleCamera, toggleFlash] = useCamera(devices, 'front')
   const [hands, setHands] = useState<HandDetectionResult[]>([])
-  const [setInputHands, data] = useFetchPrediction('http://localhost:8000', '/api/detect', hands)
+  const [setInputHands, data] = useFetchPredictions('http://localhost:8000', '/api/detect', hands)
   const [predictions, setPredictions] = useState<HandSignPrediction[]>([])
-  const [isVoiceOverEnabled, setIsVoiceOverEnabled] = useState<boolean>(false)
-  const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(false)
-  const [translationLanguage, setTranslationLanguage] = useState<string>('')
-  const [translationText, setTranslationText] = useState<string>('')
-
-  // Camera availability
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoadingCamera(false)
-
-      if (device != null) {
-        setIsCameraFound(true)
-      } else {
-        setIsCameraFound(false)
-      }
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [device])
+  const [isVoiceOverEnabled, toggleVoiceOver] = useVoiceOver(false)
+  const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguage, setTranslationLanguage,
+    translationText, setTranslationText] = useTranslation(detectionLanguageCode, 'es', false, predictions)
 
   // Fetch predictions
   useEffect(() => {
@@ -65,11 +48,6 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
 
     processPredictions(data)
   }, [data])
-
-  // Translations
-  useEffect(() => {
-    processTranslations()
-  }, [predictions])
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet'
@@ -100,44 +78,6 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
     }
   }
 
-  async function processTranslations (): Promise<void> {
-    if (!isTranslationEnabled) return
-    if (translationLanguage === '') return
-    if (predictions.length < PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES ||
-      predictions.length > PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES) return
-
-    const currentPrediction = predictions[predictions.length - 1]
-    const translatedPrediction = await translateText(currentPrediction.label, detectionLanguage, translationLanguage)
-
-    setTranslationText(translatedPrediction)
-  }
-
-  function handleToggleCamera (): void {
-    setCameraPosition((prev) => (prev === 'front' ? 'back' : 'front'))
-  }
-
-  function handleToggleFlash (): void {
-    if (cameraPosition === 'front') {
-      Alert.alert(
-        'Flash Error',
-        'Flash is not available when using the front camera.',
-        [{ text: 'Ok' }],
-        { cancelable: true }
-      )
-      return
-    }
-
-    setIsFlashEnabled((prev) => !prev)
-  }
-
-  function handleVoiceOver (): void {
-    setIsVoiceOverEnabled((prev) => !prev)
-  }
-
-  function handleToggleTranslation (): void {
-    setIsTranslationEnabled((prev) => !prev)
-  }
-
   if (isLoadingCamera) return <LoadingScreen />
 
   if (!isLoadingCamera && !isCameraFound) {
@@ -146,7 +86,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
         errorTitle='Camera Error'
         errorMessage='An error has occurred while trying to access the camera.'
         buttonLabel='Toggle Camera'
-        buttonAction={handleToggleCamera}
+        buttonAction={toggleCamera}
       />
     )
   }
@@ -161,7 +101,6 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
         device={device}
         enableZoomGesture
         isActive={isCameraActive}
-        // isActive={false}
         frameProcessor={frameProcessor}
         torch={isFlashEnabled ? 'on' : 'off'}
       />
@@ -171,16 +110,17 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
 
       {/* Camera Controls */}
       <View className='absolute flex-row w-full top-0 left-0 right-0 mt-4 z-3 justify-around'>
-        <IconButton onClick={handleToggleFlash}>
+        <IconButton onClick={toggleFlash}>
           {isFlashEnabled ? <FlashOnIcon iconColor={COLORS.cameraFlash} /> : <FlashOffIcon />}
         </IconButton>
-        <IconButton onClick={handleToggleCamera}>
+        <IconButton onClick={toggleCamera}>
           <ToggleCameraIcon />
         </IconButton>
-        <IconButton onClick={handleVoiceOver}>
+        <IconButton onClick={toggleVoiceOver}>
           <VoiceOverIcon iconColor={isVoiceOverEnabled ? COLORS.accent : 'white'} />
         </IconButton>
-        <IconButton onClick={handleToggleTranslation}>
+        {/* <IconButton onClick={handleToggleTranslation}> */}
+        <IconButton onClick={toggleTranslation}>
           <TranslateIcon iconColor={isTranslationEnabled ? COLORS.accent : 'white'} />
         </IconButton>
       </View>
@@ -198,7 +138,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
                 </View>
                 <View className='flex-1 px-4 py-2 justify-center items-center'>
                   <Text className='text-gray-400 text-xs' numberOfLines={1}>From</Text>
-                  <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(detectionLanguage)}</Text>
+                  <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(detectionLanguageCode)}</Text>
                 </View>
                 {
                   (isTranslationEnabled && translationLanguage.length > 0) && (
@@ -218,7 +158,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguage }: {
                     isTranslationEnabled && (
                       translationLanguage.length > 0 ? (
                         translateText.length > 0 && (
-                          <Text className='text-gray-400 text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
+                          isTranslationLoading ? <LoadingSpinner /> : <Text className='text-gray-400 text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
                         )
                       ) : (
                         <Text className='text-gray-400 text-sm' numberOfLines={1}>Select a language to translate</Text>

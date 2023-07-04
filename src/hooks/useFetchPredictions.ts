@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import type { HandDetectionResult } from '../models/hand'
 import type { HandSignPrediction } from '../models/prediction'
 
-export function useFetchPrediction (
+export function useFetchPredictions (
   url: string,
   endpoint: string,
   hands: HandDetectionResult[]

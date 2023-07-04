@@ -80,7 +80,7 @@ const HandsDetectionScreen = (): JSX.Element => {
         <HandsDetector
           isCameraActive={isCameraActive}
           devices={devices}
-          detectionLanguage='en'
+          detectionLanguageCode='en'
         />
       </Scaffold>
     )

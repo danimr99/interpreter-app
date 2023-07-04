@@ -4,7 +4,7 @@ import { TouchableOpacity } from 'react-native'
 const IconButton = ({ buttonColor = 'bg-transparent', buttonShape = 'rounded-full', onClick, children }: {
   buttonColor?: string
   buttonShape?: string
-  onClick: () => any
+  onClick: any
   children: ReactNode
 }): JSX.Element => {
   return (
