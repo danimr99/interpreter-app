@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { HandSignPrediction } from '../models/prediction'
+import type { HandSignPrediction } from '../models/prediction'
 import { translateText } from '../utils/translations'
 
 export function useTranslation (
@@ -45,7 +45,6 @@ export function useTranslation (
     toggleTranslation,
     translationLanguage,
     setTranslationLanguage,
-    translationText,
-    setTranslationText
+    translationText
   ] as const
 }

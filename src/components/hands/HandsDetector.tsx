@@ -1,19 +1,15 @@
-import { useEffect, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Camera, CameraDevices, useFrameProcessor } from 'react-native-vision-camera'
 import { runOnJS } from 'react-native-reanimated'
 
 import { COLORS, PREDICTIONS } from '../../constants'
-import type { HandDetectionResult } from '../../models/hand'
-import type { HandSignPrediction } from '../../models/prediction'
 import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
-import { estimateDetectedSign } from '../../utils/predictions'
 import { getLanguageFromCode } from '../../utils/languages'
 import { translateText } from '../../utils/translations'
 import { useCamera } from '../../hooks/useCamera'
-import { useFetchPredictions } from '../../hooks/useFetchPredictions'
-import { useVoiceOver } from '../../hooks/useVoiceOver'
+import { useHandsDetection } from '../../hooks/useHandsDetection'
 import { useTranslation } from '../../hooks/useTranslation'
+import { useVoiceOver } from '../../hooks/useVoiceOver'
 import {
   IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon, VoiceOverIcon, LanguagesIcon, LoadingSpinner
 } from '..'
@@ -26,57 +22,15 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
   detectionLanguageCode: string
 }): JSX.Element => {
   const [device, isLoadingCamera, isCameraFound, isFlashEnabled, toggleCamera, toggleFlash] = useCamera(devices, 'front')
-  const [hands, setHands] = useState<HandDetectionResult[]>([])
-  const [setInputHands, data] = useFetchPredictions('http://localhost:8000', '/api/detect', hands)
-  const [predictions, setPredictions] = useState<HandSignPrediction[]>([])
+  const [predictions, hands, setHands] = useHandsDetection()
   const [isVoiceOverEnabled, toggleVoiceOver] = useVoiceOver(false)
-  const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguage, setTranslationLanguage,
-    translationText, setTranslationText] = useTranslation(detectionLanguageCode, 'es', false, predictions)
-
-  // Fetch predictions
-  useEffect(() => {
-    if (hands == null) return
-    if (hands.length === 0) return
-
-    setInputHands(hands)
-  }, [hands])
-
-  // Process predictions
-  useEffect(() => {
-    if (data == null) return
-    if (data.length === 0) return
-
-    processPredictions(data)
-  }, [data])
+  const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguage, setTranslationLanguage, translationText] = useTranslation(detectionLanguageCode, 'es', false, predictions)
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet'
     const results = estimateHandsPose(frame)
     runOnJS(setHands)(results)
   }, [])
-
-  function processPredictions (unprocessedPredictions: HandSignPrediction[]): void {
-    const currentPrediction = estimateDetectedSign(unprocessedPredictions)
-
-    // Check if current prediction confidence is above minimum acceptable
-    if (currentPrediction.confidence >= PREDICTIONS.MIN_HAND_DETECTION_CONFIDENCE) {
-      // Check if predictions is empty
-      if (predictions.length === 0) {
-        setPredictions([currentPrediction])
-        setTranslationText('')
-      } else {
-        // Get previous prediction
-        const previousPrediction = predictions[predictions.length - 1]
-
-        // Check if prediction is different from previous prediction
-        if (currentPrediction.label === previousPrediction.label) {
-          setPredictions([...predictions, currentPrediction])
-        } else {
-          setPredictions([currentPrediction])
-        }
-      }
-    }
-  }
 
   if (isLoadingCamera) return <LoadingScreen />
 
@@ -119,7 +73,6 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
         <IconButton onClick={toggleVoiceOver}>
           <VoiceOverIcon iconColor={isVoiceOverEnabled ? COLORS.accent : 'white'} />
         </IconButton>
-        {/* <IconButton onClick={handleToggleTranslation}> */}
         <IconButton onClick={toggleTranslation}>
           <TranslateIcon iconColor={isTranslationEnabled ? COLORS.accent : 'white'} />
         </IconButton>
