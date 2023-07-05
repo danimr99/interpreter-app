@@ -6,7 +6,6 @@ import { runOnJS } from 'react-native-reanimated'
 import { COLORS, PREDICTIONS } from '../../constants'
 import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
 import { getLanguageFromCode } from '../../utils/languages'
-import { translateText } from '../../utils/translations'
 import { useCamera } from '../../hooks/useCamera'
 import { useHandsDetection } from '../../hooks/useHandsDetection'
 import { useTranslation } from '../../hooks/useTranslation'
@@ -77,7 +76,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
       />
 
       {/* Hands Pose */}
-      <HandsPose hands={hands} />
+      {/* <HandsPose hands={hands} /> */}
 
       {/* Camera Controls */}
       <View className='absolute flex-row w-full top-0 left-0 right-0 mt-4 z-3 justify-around'>
@@ -127,7 +126,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
                   {
                     isTranslationEnabled && (
                       translationLanguageCode.length > 0 ? (
-                        translateText.length > 0 && (
+                        translationText.length > 0 && (
                           isTranslationLoading ? <LoadingSpinner /> : <Text className='text-secondary text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
                         )
                       ) : (
