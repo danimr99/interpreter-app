@@ -98,37 +98,37 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
       {/* Translations and/or Predictions */}
       {
         predictions.length > PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES && (
-          <View className='absolute bottom-0 left-0 right-0 w-full h-32'>
-            <View className='flex-1 bg-theme/[0.25]'>
+          <View className='absolute bottom-0 left-0 right-0 w-full'>
+            <View className='flex-1 bg-white/[0.6] mx-2 mb-2 rounded-3xl'>
               {/* Stats */}
-              <View className='flex-row w-full h-2/5 justify-around'>
+              <View className='flex-row w-full h-2/5 justify-around my-2'>
                 <View className='flex-1 px-4 py-2 justify-center items-center'>
-                  <Text className='text-gray-600 text-xs font-semibold' numberOfLines={1}>Accuracy</Text>
-                  <Text className='text-white text-lg text-center' numberOfLines={1}>{(predictions[predictions.length - 1].confidence * 100).toFixed(0)}%</Text>
+                  <Text className='text-gray-500 text-xs font-semibold' numberOfLines={1}>Accuracy</Text>
+                  <Text className='text-gray-700 text-lg text-center' numberOfLines={1}>{(predictions[predictions.length - 1].confidence * 100).toFixed(0)}%</Text>
                 </View>
                 <View className='flex-1 px-4 py-2 justify-center items-center'>
-                  <Text className='text-gray-600 text-xs font-semibold' numberOfLines={1}>From</Text>
-                  <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(detectionLanguageCode)}</Text>
+                  <Text className='text-gray-500 text-xs font-semibold' numberOfLines={1}>From</Text>
+                  <Text className='text-gray-700 text-lg text-center' numberOfLines={1}>{getLanguageFromCode(detectionLanguageCode)}</Text>
                 </View>
                 {
                   (isTranslationEnabled && translationLanguageCode.length > 0) && (
                     <View className='flex-1 px-4 py-2 justify-center items-center'>
-                      <Text className='text-gray-600 text-xs font-semibold' numberOfLines={1}>To</Text>
-                      <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(translationLanguageCode)}</Text>
+                      <Text className='text-gray-500 text-xs font-semibold' numberOfLines={1}>To</Text>
+                      <Text className='text-gray-700 text-lg text-center' numberOfLines={1}>{getLanguageFromCode(translationLanguageCode)}</Text>
                     </View>
                   )
                 }
               </View>
 
-              <View className='flex-1 flex-row'>
+              <View className='flex-1 flex-row mb-2'>
                 {/* Words */}
                 <View className='flex-1 justify-center items-center'>
-                  <Text className='text-white text-2xl font-bold' numberOfLines={1}>{predictions[predictions.length - 1].label}</Text>
+                  <Text className='text-gray-700 text-2xl font-bold' numberOfLines={1}>{predictions[predictions.length - 1].label}</Text>
                   {
                     isTranslationEnabled && (
                       translationLanguageCode.length > 0 ? (
                         translateText.length > 0 && (
-                          isTranslationLoading ? <LoadingSpinner /> : <Text className='text-gray-600 text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
+                          isTranslationLoading ? <LoadingSpinner /> : <Text className='text-secondary text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
                         )
                       ) : (
                         <Text className='text-gray-600 text-sm' numberOfLines={1}>Select a language to translate</Text>
@@ -142,7 +142,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
                   isTranslationEnabled && (
                     <View className='w-1/5 justify-center items-center'>
                       <IconButton
-                        buttonColor='bg-accent/[0.5]'
+                        buttonColor='bg-accent/[0.75]'
                         buttonShape='rounded-lg'
                         onClick={() => {
                           setTranslationLanguageCode('es')

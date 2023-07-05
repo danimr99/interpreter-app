@@ -8,7 +8,9 @@ export function useVoiceOver (initialState: boolean, initialLanguageCode: string
   const [voiceOverLanguage, setVoiceOverLanguage] = useState<string>(initialLanguageCode)
 
   useEffect(() => {
-    void processVoiceOver(voiceOverText, voiceOverLanguage)
+    if (isVoiceOverEnabled) {
+      void processVoiceOver(voiceOverText, voiceOverLanguage)
+    }
   }, [voiceOverText, voiceOverLanguage])
 
   function toggleVoiceOver (): void {
