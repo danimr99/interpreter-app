@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Text, View } from 'react-native'
 import { Camera, CameraDevices, useFrameProcessor } from 'react-native-vision-camera'
 import { runOnJS } from 'react-native-reanimated'
@@ -23,8 +24,24 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
 }): JSX.Element => {
   const [device, isLoadingCamera, isCameraFound, isFlashEnabled, toggleCamera, toggleFlash] = useCamera(devices, 'front')
   const [predictions, hands, setHands] = useHandsDetection()
-  const [isVoiceOverEnabled, toggleVoiceOver] = useVoiceOver(false)
-  const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguage, setTranslationLanguage, translationText] = useTranslation(detectionLanguageCode, 'es', false, predictions)
+  const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguageCode, setTranslationLanguageCode, translationText] = useTranslation(detectionLanguageCode, '', false, predictions)
+  const [isVoiceOverEnabled, toggleVoiceOver, setVoiceOverText, setVoiceOverLanguage] =
+    useVoiceOver(false, isTranslationEnabled && translationLanguageCode.length > 0 ? translationLanguageCode : detectionLanguageCode)
+
+  useEffect(() => {
+    // Check if the prediction has changed
+    if (predictions.length === PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES) {
+      // Check if prediction has to be translated
+      if (isTranslationEnabled && translationLanguageCode.length > 0) {
+        setVoiceOverLanguage(translationLanguageCode)
+        setVoiceOverText(translationText)
+      } else {
+        // Set the voice over language to the detection language
+        setVoiceOverLanguage(detectionLanguageCode)
+        setVoiceOverText(predictions[predictions.length - 1].label)
+      }
+    }
+  }, [isTranslationEnabled, translationLanguageCode, translationText, predictions])
 
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet'
@@ -86,18 +103,18 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
               {/* Stats */}
               <View className='flex-row w-full h-2/5 justify-around'>
                 <View className='flex-1 px-4 py-2 justify-center items-center'>
-                  <Text className='text-gray-400 text-xs' numberOfLines={1}>Accuracy</Text>
+                  <Text className='text-gray-600 text-xs font-semibold' numberOfLines={1}>Accuracy</Text>
                   <Text className='text-white text-lg text-center' numberOfLines={1}>{(predictions[predictions.length - 1].confidence * 100).toFixed(0)}%</Text>
                 </View>
                 <View className='flex-1 px-4 py-2 justify-center items-center'>
-                  <Text className='text-gray-400 text-xs' numberOfLines={1}>From</Text>
+                  <Text className='text-gray-600 text-xs font-semibold' numberOfLines={1}>From</Text>
                   <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(detectionLanguageCode)}</Text>
                 </View>
                 {
-                  (isTranslationEnabled && translationLanguage.length > 0) && (
+                  (isTranslationEnabled && translationLanguageCode.length > 0) && (
                     <View className='flex-1 px-4 py-2 justify-center items-center'>
-                      <Text className='text-gray-400 text-xs' numberOfLines={1}>To</Text>
-                      <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(translationLanguage)}</Text>
+                      <Text className='text-gray-600 text-xs font-semibold' numberOfLines={1}>To</Text>
+                      <Text className='text-white text-lg text-center' numberOfLines={1}>{getLanguageFromCode(translationLanguageCode)}</Text>
                     </View>
                   )
                 }
@@ -109,12 +126,12 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
                   <Text className='text-white text-2xl font-bold' numberOfLines={1}>{predictions[predictions.length - 1].label}</Text>
                   {
                     isTranslationEnabled && (
-                      translationLanguage.length > 0 ? (
+                      translationLanguageCode.length > 0 ? (
                         translateText.length > 0 && (
-                          isTranslationLoading ? <LoadingSpinner /> : <Text className='text-gray-400 text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
+                          isTranslationLoading ? <LoadingSpinner /> : <Text className='text-gray-600 text-lg font-semibold' numberOfLines={1}>{translationText}</Text>
                         )
                       ) : (
-                        <Text className='text-gray-400 text-sm' numberOfLines={1}>Select a language to translate</Text>
+                        <Text className='text-gray-600 text-sm' numberOfLines={1}>Select a language to translate</Text>
                       )
                     )
                   }
@@ -128,7 +145,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
                         buttonColor='bg-accent/[0.5]'
                         buttonShape='rounded-lg'
                         onClick={() => {
-                          setTranslationLanguage('es')
+                          setTranslationLanguageCode('es')
                         }}>
                         <LanguagesIcon />
                       </IconButton>

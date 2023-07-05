@@ -11,8 +11,8 @@ export function useTranslation (
 ) {
   const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(initialState)
   const [isTranslationLoading, setIsTranslationLoading] = useState<boolean>(false)
-  const [detectionLanguage, setDetectionLanguage] = useState<string>(originLanguage)
-  const [translationLanguage, setTranslationLanguage] = useState<string>(destinationLanguage)
+  const [detectionLanguageCode, setDetectionLanguageCode] = useState<string>(originLanguage)
+  const [translationLanguageCode, setTranslationLanguageCode] = useState<string>(destinationLanguage)
   const [translationText, setTranslationText] = useState<string>('')
   const previousPrediction = useRef<HandSignPrediction>()
 
@@ -26,13 +26,13 @@ export function useTranslation (
 
   async function processTranslations (): Promise<void> {
     if (!isTranslationEnabled) return
-    if (translationLanguage === '') return
+    if (translationLanguageCode === '') return
     if (previousPrediction.current?.label === predictions[predictions.length - 1].label) return
 
     setIsTranslationLoading(true)
 
     const currentPrediction = predictions[predictions.length - 1]
-    const translatedPrediction = await translateText(currentPrediction.label, detectionLanguage, translationLanguage)
+    const translatedPrediction = await translateText(currentPrediction.label, detectionLanguageCode, translationLanguageCode)
     previousPrediction.current = currentPrediction
 
     setTranslationText(translatedPrediction)
@@ -43,8 +43,8 @@ export function useTranslation (
     isTranslationEnabled,
     isTranslationLoading,
     toggleTranslation,
-    translationLanguage,
-    setTranslationLanguage,
+    translationLanguageCode,
+    setTranslationLanguageCode,
     translationText
   ] as const
 }
