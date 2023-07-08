@@ -9,7 +9,7 @@ import { getLanguageFromCode } from '../../utils/languages'
 import { useCamera } from '../../hooks/useCamera'
 import { useHandsDetection } from '../../hooks/useHandsDetection'
 import { useTranslation } from '../../hooks/useTranslation'
-import { useVoiceOver } from '../../hooks/useVoiceOver'
+import { useTTS } from '../../hooks/useTTS'
 import {
   IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon, VoiceOverIcon, LanguagesIcon, LoadingSpinner
 } from '..'
@@ -23,21 +23,21 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
 }): JSX.Element => {
   const [device, isLoadingCamera, isCameraFound, isFlashEnabled, toggleCamera, toggleFlash] = useCamera(devices, 'front')
   const [predictions, hands, setHands] = useHandsDetection()
-  const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguageCode, setTranslationLanguageCode, translationText] = useTranslation(detectionLanguageCode, '', false, predictions)
-  const [isVoiceOverEnabled, toggleVoiceOver, setVoiceOverText, setVoiceOverLanguage] =
-    useVoiceOver(false, isTranslationEnabled && translationLanguageCode.length > 0 ? translationLanguageCode : detectionLanguageCode)
+  const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguageCode, setTranslationLanguageCode,
+    translationText] = useTranslation(detectionLanguageCode, '', false, predictions.length > 0 ? predictions[predictions.length - 1].label : '')
+  const [isTTSEnabled, toggleTTS, setTTSText, setTTSLanguage] = useTTS(false, isTranslationEnabled && translationLanguageCode.length > 0 ? translationLanguageCode : detectionLanguageCode)
 
   useEffect(() => {
     // Check if the prediction has changed
     if (predictions.length === PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES) {
       // Check if prediction has to be translated
       if (isTranslationEnabled && translationLanguageCode.length > 0) {
-        setVoiceOverLanguage(translationLanguageCode)
-        setVoiceOverText(translationText)
+        setTTSLanguage(translationLanguageCode)
+        setTTSText(translationText)
       } else {
         // Set the voice over language to the detection language
-        setVoiceOverLanguage(detectionLanguageCode)
-        setVoiceOverText(predictions[predictions.length - 1].label)
+        setTTSLanguage(detectionLanguageCode)
+        setTTSText(predictions[predictions.length - 1].label)
       }
     }
   }, [isTranslationEnabled, translationLanguageCode, translationText, predictions])
@@ -86,8 +86,8 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
         <IconButton onClick={toggleCamera}>
           <ToggleCameraIcon />
         </IconButton>
-        <IconButton onClick={toggleVoiceOver}>
-          <VoiceOverIcon iconColor={isVoiceOverEnabled ? COLORS.accent : 'white'} />
+        <IconButton onClick={toggleTTS}>
+          <VoiceOverIcon iconColor={isTTSEnabled ? COLORS.accent : 'white'} />
         </IconButton>
         <IconButton onClick={toggleTranslation}>
           <TranslateIcon iconColor={isTranslationEnabled ? COLORS.accent : 'white'} />

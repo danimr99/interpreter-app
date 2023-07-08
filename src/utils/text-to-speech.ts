@@ -7,14 +7,14 @@ export async function speakText (text: string, languageCode: string): Promise<vo
     const encodedSound = await speak(text, { to: languageCode, rejectOnPartialFail: false })
 
     // Save to a temporary file and play sound
-    const path = `${RNFS.DocumentDirectoryPath}/voiceover.mp3`
+    const path = `${RNFS.DocumentDirectoryPath}/tts.mp3`
 
     RNFS.writeFile(path, encodedSound, { encoding: 'base64' })
       .then(() => {
         const sound = new Sound(path, '', (error) => {
           if (error) {
-            console.log('An error has occurred while playing a voiceover', error);
-            return;
+            console.log('An error has occurred while playing a TTS message', error)
+            return
           }
 
           sound.play()

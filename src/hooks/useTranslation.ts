@@ -1,42 +1,39 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import type { HandSignPrediction } from '../models/prediction'
 import { translateText } from '../utils/translations'
 
 export function useTranslation (
   originLanguage: string,
   destinationLanguage: string,
   initialState: boolean,
-  predictions: HandSignPrediction[]
+  textToTranslate: string
 ) {
   const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(initialState)
   const [isTranslationLoading, setIsTranslationLoading] = useState<boolean>(false)
   const [detectionLanguageCode, setDetectionLanguageCode] = useState<string>(originLanguage)
   const [translationLanguageCode, setTranslationLanguageCode] = useState<string>(destinationLanguage)
   const [translationText, setTranslationText] = useState<string>('')
-  const previousPrediction = useRef<HandSignPrediction>()
 
   useEffect(() => {
-    processTranslations()
-  }, [predictions])
+    processTranslation()
+  }, [textToTranslate])
 
   function toggleTranslation (): void {
     setIsTranslationEnabled((prev) => !prev)
   }
 
-  async function processTranslations (): Promise<void> {
+  async function processTranslation (): Promise<void> {
     if (!isTranslationEnabled) return
     if (translationLanguageCode === '') return
-    if (previousPrediction.current?.label === predictions[predictions.length - 1].label) return
 
-    setIsTranslationLoading(true)
+    if (textToTranslate.length > 0) {
+      setIsTranslationLoading(true)
 
-    const currentPrediction = predictions[predictions.length - 1]
-    const translatedPrediction = await translateText(currentPrediction.label, detectionLanguageCode, translationLanguageCode)
-    previousPrediction.current = currentPrediction
+      const translatedText = await translateText(textToTranslate, detectionLanguageCode, translationLanguageCode)
 
-    setTranslationText(translatedPrediction)
-    setIsTranslationLoading(false)
+      setTranslationText(translatedText)
+      setIsTranslationLoading(false)
+    }
   }
 
   return [
