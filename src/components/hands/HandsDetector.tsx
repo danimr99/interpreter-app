@@ -1,17 +1,17 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Camera, CameraDevices, useFrameProcessor } from 'react-native-vision-camera'
 import { runOnJS } from 'react-native-reanimated'
 
 import { COLORS, PREDICTIONS } from '../../constants'
 import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
-import { getLanguageFromCode } from '../../utils/languages'
+import { getCodeFromLanguage, getLanguageFromCode } from '../../utils/languages'
 import { useCamera } from '../../hooks/useCamera'
 import { useHandsDetection } from '../../hooks/useHandsDetection'
 import { useTranslation } from '../../hooks/useTranslation'
 import { useTTS } from '../../hooks/useTTS'
 import {
-  IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon, VoiceOverIcon, LanguagesIcon, LoadingSpinner
+  IconButton, HandsPose, ToggleCameraIcon, FlashOnIcon, FlashOffIcon, TranslateIcon, VoiceOverIcon, LanguagesIcon, LoadingSpinner, LanguagesModal
 } from '..'
 import { ErrorMessageScreen, LoadingScreen } from '../../screens'
 
@@ -25,6 +25,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
   const [predictions, hands, setHands] = useHandsDetection()
   const [isTranslationEnabled, isTranslationLoading, toggleTranslation, translationLanguageCode, setTranslationLanguageCode,
     translationText] = useTranslation(detectionLanguageCode, '', false, predictions.length > 0 ? predictions[predictions.length - 1].label : '')
+  const [isLanguagesModalVisible, setIsLanguagesModalVisible] = useState<boolean>(false)
   const [isTTSEnabled, toggleTTS, setTTSText, setTTSLanguage] = useTTS(false, isTranslationEnabled && translationLanguageCode.length > 0 ? translationLanguageCode : detectionLanguageCode)
 
   useEffect(() => {
@@ -94,6 +95,13 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
         </IconButton>
       </View>
 
+      {/* Languages Modal */}
+      <LanguagesModal
+        visible={isLanguagesModalVisible}
+        setIsModalVisible={setIsLanguagesModalVisible}
+        setLanguage={setTranslationLanguageCode}
+      />
+
       {/* Translations and/or Predictions */}
       {
         predictions.length > PREDICTIONS.CONSECUTIVE_PREDICTIONS_FRAMES && (
@@ -144,7 +152,7 @@ const HandsDetector = ({ devices, isCameraActive, detectionLanguageCode }: {
                         buttonColor='bg-accent/[0.75]'
                         buttonShape='rounded-lg'
                         onClick={() => {
-                          setTranslationLanguageCode('es')
+                          setIsLanguagesModalVisible(true)
                         }}>
                         <LanguagesIcon />
                       </IconButton>

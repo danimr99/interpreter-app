@@ -1,5 +1,4 @@
 export enum LANGUAGES {
-  "auto" = "Automatic",
   "af" = "Afrikaans",
   "sq" = "Albanian",
   "am" = "Amharic",
@@ -44,7 +43,6 @@ export enum LANGUAGES {
   "ht" = "Haitian Creole",
   "ha" = "Hausa",
   "haw" = "Hawaiian",
-  "iw" = "Hebrew",
   "he" = "Hebrew",
   "hi" = "Hindi",
   "hmn" = "Hmong",

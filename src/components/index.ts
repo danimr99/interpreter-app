@@ -10,6 +10,9 @@ import HandsDetector from './hands/HandsDetector'
 import HandsPose from './hands/HandsPose'
 import HandKeypointCircle from './hands/HandKeypointCircle'
 
+// Languages
+import LanguagesModal from './languages/LanguagesModal'
+
 // System
 import StyledStatusBar from './system/StyledStatusBar'
 
@@ -33,6 +36,9 @@ export {
   HandsDetector,
   HandsPose,
   HandKeypointCircle,
+
+  // Languages
+  LanguagesModal,
 
   // System
   StyledStatusBar,
