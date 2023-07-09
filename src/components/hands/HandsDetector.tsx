@@ -5,7 +5,7 @@ import { runOnJS } from 'react-native-reanimated'
 
 import { COLORS, PREDICTIONS } from '../../constants'
 import { estimateHandsPose } from '../../utils/hands-pose-frame-processor'
-import { getCodeFromLanguage, getLanguageFromCode } from '../../utils/languages'
+import { getLanguageFromCode } from '../../utils/languages'
 import { useCamera } from '../../hooks/useCamera'
 import { useHandsDetection } from '../../hooks/useHandsDetection'
 import { useTranslation } from '../../hooks/useTranslation'
